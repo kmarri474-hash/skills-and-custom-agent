@@ -12,7 +12,7 @@ Full lifecycle Rally management — from PRD-to-stories creation through iterati
 Collect from user (skip any already provided):
 
 1. **Rally board URL** — extract Project ObjectID (numeric segment before `d/`)
-2. **Rally API key** — `zsessionid` token (ask user to type directly if sensitive)
+2. **Rally OAuth token** — run the interactive OAuth flow (see [REFERENCE.md § Authentication](REFERENCE.md#authentication)); user opens the auth URL in a browser, logs in, then pastes the `code` from the redirect URL into the terminal
 3. **What operation?** — create stories, assign iterations, add estimates, add tags, or batch update
 
 ## Workflows

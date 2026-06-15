@@ -19,7 +19,7 @@
       "skillFolderHash": "b38c5aa6ae5d6903e60d3f74a7aafd32d02f2c06",
       "pluginName": "mattpocock-skills",
       "installedAt": "2026-05-07T14:24:36.810Z",
-      "updatedAt": "2026-05-07T14:24:36.810Z"
+      "updatedAt": "2026-06-15T13:21:23.563Z"
     },
     "tdd": {
       "source": "mattpocock/skills",
@@ -119,6 +119,26 @@
       "skillFolderHash": "3013fdeb8a11b10b1eb795ec3ae8bfca38f7c26d",
       "installedAt": "2026-05-07T14:24:45.044Z",
       "updatedAt": "2026-05-07T14:24:45.044Z"
+    },
+    "teach": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/productivity/teach/SKILL.md",
+      "skillFolderHash": "975430f7801bac2258ed18f4d80860024443b4f7",
+      "pluginName": "mattpocock-skills",
+      "installedAt": "2026-06-15T13:21:23.571Z",
+      "updatedAt": "2026-06-15T13:21:23.571Z"
+    },
+    "handoff": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/productivity/handoff/SKILL.md",
+      "skillFolderHash": "7bbb60d64c911617cee7f71b2ba9e24364faa14e",
+      "pluginName": "mattpocock-skills",
+      "installedAt": "2026-06-15T13:21:23.579Z",
+      "updatedAt": "2026-06-15T13:21:23.579Z"
     }
   },
   "dismissed": {
@@ -127,17 +147,17 @@
   "lastSelectedAgents": [
     "amp",
     "antigravity",
+    "antigravity-cli",
     "cline",
     "codex",
     "cursor",
     "deepagents",
-    "dexto",
-    "firebender",
     "gemini-cli",
     "github-copilot",
-    "kimi-cli",
+    "kimi-code-cli",
     "opencode",
     "warp",
+    "zed",
     "windsurf",
     "claude-code"
   ]

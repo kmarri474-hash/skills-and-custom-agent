@@ -1,6 +1,6 @@
 ---
 name: rally-to-prd
-description: 'Fetch a Rally user story by ID and generate a complete PRD document. Use when user says "get story", "rally story", "fetch user story", "generate PRD from rally", "US number", or provides a Rally URL. Requires story number and API key from user.'
+description: 'Fetch a Rally user story by ID and generate a complete PRD document. Use when user says "get story", "rally story", "fetch user story", "generate PRD from rally", "US number", or provides a Rally URL. Requires story number and OAuth token (via interactive browser flow) from user.'
 argument-hint: 'Rally story number (e.g., 846732192647) or full Rally URL'
 ---
 
@@ -13,23 +13,48 @@ argument-hint: 'Rally story number (e.g., 846732192647) or full Rally URL'
 Ask the user for (skip any already provided):
 
 - **Story ID** — the numeric object ID (from URL path `/userstory/<ID>/`) or FormattedID (e.g., US10352106)
-- **Rally API Key** — their `ZSESSIONID` token
+- **Rally OAuth Token** — obtained via interactive browser login (see step 2 below)
 
-### 2. Fetch Story Data
+### 2. Get OAuth Token
 
-Run these API calls sequentially via `curl` in the terminal:
+Personal API keys are blocked. Run this interactively to get a token:
+
+```python
+import requests, urllib.parse, sys
+
+CLIENT_ID     = "<your-rally-client-id>"      # ask the user — never hardcode
+CLIENT_SECRET = "<your-rally-client-secret>"  # ask the user — never hardcode
+REDIRECT_URI  = "https://localhost:4200"
+
+auth_url = (
+    "https://rally1.rallydev.com/login/oauth2/auth"
+    f"?client_id={CLIENT_ID}&response_type=code"
+    f"&redirect_uri={urllib.parse.quote(REDIRECT_URI, safe='')}&scope=alm"
+)
+print(auth_url)  # open in browser, log in
+auth_code = input("Paste code from redirect URL: ").strip()
+token_r = requests.post("https://rally1.rallydev.com/login/oauth2/token", data={
+    "grant_type": "authorization_code", "code": auth_code,
+    "client_id": CLIENT_ID, "client_secret": CLIENT_SECRET, "redirect_uri": REDIRECT_URI,
+}, timeout=30)
+TOKEN = token_r.json()["access_token"]
+```
+
+### 3. Fetch Story Data
+
+Run these API calls sequentially via `curl` in the terminal (set `TOKEN` from step 2):
 
 ```bash
 # Primary story fields
-curl -s -H "ZSESSIONID: <API_KEY>" \
+curl -s -H "zsessionid: $TOKEN" \
   "https://rally1.rallydev.com/slm/webservice/v2.0/hierarchicalrequirement/<STORY_ID>?fetch=Name,Description,Notes,FormattedID,ScheduleState,PlanEstimate,Blocked,BlockedReason,Iteration,Release,Owner,Project,Tags,Parent,Feature,PortfolioItem,c_AcceptanceCriteria,Priority,Package,TestCaseCount,DefectCount"
 
 # Tasks under the story
-curl -s -H "ZSESSIONID: <API_KEY>" \
+curl -s -H "zsessionid: $TOKEN" \
   "https://rally1.rallydev.com/slm/webservice/v2.0/hierarchicalrequirement/<STORY_ID>/Tasks?fetch=Name,Description,State,Owner,Estimate,ToDo"
 
 # Children (if DirectChildrenCount > 0)
-curl -s -H "ZSESSIONID: <API_KEY>" \
+curl -s -H "zsessionid: $TOKEN" \
   "https://rally1.rallydev.com/slm/webservice/v2.0/hierarchicalrequirement/<STORY_ID>/Children?fetch=Name,FormattedID,ScheduleState,Owner"
 ```
 

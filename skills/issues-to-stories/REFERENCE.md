@@ -4,14 +4,34 @@
 
 ### Authentication
 
-All Rally API requests use the `zsessionid` header:
+Personal API keys are **blocked by org policy**. Use OAuth2 authorization_code flow:
 
 ```python
-RALLY_BASE = "https://rally1.rallydev.com/slm/webservice/v2.0"
-HEADERS = {
-    "zsessionid": "<API_KEY>",
-    "Content-Type": "application/json",
-}
+import requests, urllib.parse, sys
+
+CLIENT_ID     = "<your-rally-client-id>"      # ask the user — never hardcode
+CLIENT_SECRET = "<your-rally-client-secret>"  # ask the user — never hardcode
+REDIRECT_URI  = "https://localhost:4200"
+RALLY_BASE    = "https://rally1.rallydev.com/slm/webservice/v2.0"
+
+auth_url = (
+    "https://rally1.rallydev.com/login/oauth2/auth"
+    f"?client_id={CLIENT_ID}&response_type=code"
+    f"&redirect_uri={urllib.parse.quote(REDIRECT_URI, safe='')}&scope=alm"
+)
+print(auth_url)  # user opens in browser, logs in
+
+auth_code = input("Paste code from redirect URL: ").strip()
+token_r = requests.post("https://rally1.rallydev.com/login/oauth2/token", data={
+    "grant_type": "authorization_code",
+    "code": auth_code,
+    "client_id": CLIENT_ID,
+    "client_secret": CLIENT_SECRET,
+    "redirect_uri": REDIRECT_URI,
+}, timeout=30)
+access_token = token_r.json()["access_token"]
+
+HEADERS = {"zsessionid": access_token, "Content-Type": "application/json"}
 ```
 
 ### Project Reference

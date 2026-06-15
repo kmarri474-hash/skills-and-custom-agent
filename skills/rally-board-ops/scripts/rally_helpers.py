@@ -5,7 +5,7 @@ Rally API helper functions.
 Usage:
     from rally_helpers import RallyClient
 
-    client = RallyClient(api_key="your_zsessionid", project_oid="848873700905")
+    client = RallyClient(access_token="<oauth_token>", project_oid="848873700905")
     
     # Create a feature
     feat = client.create_feature("P0 — Core Endpoint", "<p>Description</p>")
@@ -34,9 +34,9 @@ DEFAULT_DELAY = 0.35
 
 
 class RallyClient:
-    def __init__(self, api_key: str, project_oid: str, delay: float = DEFAULT_DELAY):
+    def __init__(self, access_token: str, project_oid: str, delay: float = DEFAULT_DELAY):
         self.base = RALLY_BASE
-        self.headers = {"zsessionid": api_key, "Content-Type": "application/json"}
+        self.headers = {"zsessionid": access_token, "Content-Type": "application/json"}
         self.project_oid = project_oid
         self.project_ref = f"{self.base}/project/{project_oid}"
         self.delay = delay

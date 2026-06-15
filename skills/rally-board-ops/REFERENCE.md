@@ -4,12 +4,43 @@
 
 ### Authentication
 
+Personal API keys are **blocked by org policy**. Use OAuth2 authorization_code flow:
+
 ```python
-RALLY_BASE = "https://rally1.rallydev.com/slm/webservice/v2.0"
-HEADERS = {
-    "zsessionid": "<API_KEY>",
-    "Content-Type": "application/json",
-}
+import requests, urllib.parse, sys
+
+CLIENT_ID     = "<your-rally-client-id>"      # ask the user — never hardcode
+CLIENT_SECRET = "<your-rally-client-secret>"  # ask the user — never hardcode
+REDIRECT_URI  = "https://localhost:4200"
+RALLY_BASE    = "https://rally1.rallydev.com/slm/webservice/v2.0"
+
+# Step 1: print auth URL — user opens in browser and logs in
+auth_url = (
+    "https://rally1.rallydev.com/login/oauth2/auth"
+    f"?client_id={CLIENT_ID}"
+    f"&response_type=code"
+    f"&redirect_uri={urllib.parse.quote(REDIRECT_URI, safe='')}"
+    f"&scope=alm"
+)
+print(auth_url)
+
+# Step 2: user pastes code from redirect URL (https://localhost:4200?code=XXXX)
+auth_code = input("Paste code from redirect URL: ").strip()
+
+# Step 3: exchange code for access token
+token_r = requests.post("https://rally1.rallydev.com/login/oauth2/token", data={
+    "grant_type": "authorization_code",
+    "code": auth_code,
+    "client_id": CLIENT_ID,
+    "client_secret": CLIENT_SECRET,
+    "redirect_uri": REDIRECT_URI,
+}, timeout=30)
+if token_r.status_code != 200:
+    print(token_r.text); sys.exit(1)
+access_token = token_r.json()["access_token"]
+
+# Step 4: use token via zsessionid header (NOT Authorization: Bearer)
+HEADERS = {"zsessionid": access_token, "Content-Type": "application/json"}
 ```
 
 ### Project Reference
@@ -503,7 +534,7 @@ Every batch operation script follows this structure:
 import requests, time, json
 
 RALLY_BASE = "https://rally1.rallydev.com/slm/webservice/v2.0"
-HEADERS = {"zsessionid": "<KEY>", "Content-Type": "application/json"}
+HEADERS = {"zsessionid": access_token, "Content-Type": "application/json"}  # access_token from OAuth flow above
 DELAY = 0.35
 
 # === DATA MAPPING ===

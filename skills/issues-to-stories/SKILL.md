@@ -1,6 +1,6 @@
 ---
 name: issues-to-stories
-description: "Convert GitHub Issues (PRDs) into Rally Features and User Stories with full acceptance criteria, tasks, and repo references. Use when user says 'create rally stories', 'convert issues to stories', 'issues to rally', 'create features from PRD', 'PRD to rally', or wants to populate a Rally board from a GitHub issue containing a PRD. Requires: Rally project/board URL, API key, GitHub issue URL."
+description: "Convert GitHub Issues (PRDs) into Rally Features and User Stories with full acceptance criteria, tasks, and repo references. Use when user says 'create rally stories', 'convert issues to stories', 'issues to rally', 'create features from PRD', 'PRD to rally', or wants to populate a Rally board from a GitHub issue containing a PRD. Requires: Rally project/board URL, OAuth token (via interactive browser flow), GitHub issue URL."
 ---
 
 # Issues to Rally Stories
@@ -15,7 +15,7 @@ Ask the user for (skip any already provided):
 
 - **GitHub Issue URL** — e.g., `https://github.com/org/repo/issues/40`
 - **Rally Board URL** — e.g., `https://rally1.rallydev.com/#/848873700905d/teamboard`
-- **Rally API Key** — their `ZSESSIONID` token (ask user to type directly if sensitive)
+- **Rally OAuth Token** — run the interactive OAuth flow: open the auth URL in a browser, log in, paste the `code` from `https://localhost:4200?code=XXXX` into the terminal to get an access token. See [REFERENCE.md § Authentication](REFERENCE.md#authentication).
 - **Repository URLs** — repos for backend/frontend (to tag stories with repo references)
 
 Extract the Rally **Project ObjectID** from the board URL (the numeric segment before `d/`).
