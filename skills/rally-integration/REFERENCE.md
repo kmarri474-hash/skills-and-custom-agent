@@ -40,19 +40,46 @@ Response: `{ "access_token": "...", "expires_in": 3600 }`. Cache the token and r
 A long-lived key created in Rally under "API Keys". Send as `Authorization: Bearer <key>`
 (or `ZSESSIONID` header on older instances). If present, skip the OAuth2 flow entirely.
 
-### 3. OAuth2 authorization code (interactive)
-Requires a browser redirect login. **Avoid for backend services** — it can't run unattended.
-We explicitly rejected this in ADR-0005.
+### 3. OAuth2 authorization code (interactive — the practical path for ad-hoc work)
+Requires a browser login. **Avoid for unattended backend services** (it can't refresh silently),
+but it is the **correct and confirmed-working path for one-off reports and CRUD** against
+browser-login tenants where client_credentials is disabled.
+
+Flow:
+1. **Authorize** — send the user to:
+   ```
+   https://rally1.rallydev.com/login/oauth2/auth
+     ?response_type=code
+     &client_id=<id>
+     &redirect_uri=<EXACT registered URI, e.g. https://localhost:3000/callbace>
+     &scope=alm
+   ```
+   - `scope=alm` is **required** (omitting it → `invalid_scope`).
+   - `redirect_uri` must match the registered value **exactly**, including the path.
+2. **Capture the code** — the browser redirects to `<redirect_uri>?code=XXXX`. A self-signed
+   `https://localhost` listener works, but browsers won't auto-post through a self-signed cert,
+   so the simplest reliable method is: **user copies the `code` from the address bar**.
+3. **Exchange** — single-use code → token:
+   ```
+   POST https://rally1.rallydev.com/login/oauth2/token
+   grant_type=authorization_code&code=<XXXX>&redirect_uri=<same URI>
+     &client_id=<id>&client_secret=<secret>
+   ```
+   Response: `{ "access_token": "...", "expires_in": 3600 }`.
+4. **Cache the token** (e.g. `rally_token.txt`) and reuse it for every subsequent call. The
+   **auth code is consumed on first exchange** — re-running the exchange returns
+   `400 code_not_found`. Caching avoids forcing the user through the browser repeatedly.
 
 **Precedence rule**: if a static token/API key is configured, use it and never call the token
-endpoint. Otherwise run client-credentials and cache.
+endpoint. Otherwise, for services use client_credentials; for ad-hoc work use authorization_code.
 
-> **Real-world note (observed in production):** the OAuth2 client-credentials grant returned
-> `HTTP 400 Bad Request` on a rally1.rallydev.com tenant where only **API keys** were enabled,
-> even with valid-looking `client_id`/`client_secret`. The **API key / static bearer token path
-> worked immediately.** If client-credentials 400s, ask the user for a Rally **API Key**
-> (Rally → user menu → API Keys) and use the token path — don't burn time debugging the OAuth2
-> grant. Always run `scripts/verify_rally.py` to confirm which path works before writing app code.
+> **Real-world notes (observed in production):**
+> - `grant_type=client_credentials` returned `HTTP 400` ("must be `authorization_code`") on a
+>   rally1.rallydev.com tenant configured as a browser-login app. **`authorization_code` worked.**
+> - The same tenant also accepts **API keys** (Rally → user menu → API Keys) as a static bearer
+>   token — preferred for unattended services.
+> - Always run `scripts/verify_rally.py` (API key path) or `scripts/rally_ops.py auth-url`
+>   (authorization_code path) to confirm which works before building further.
 
 ## WSAPI query language
 
@@ -103,6 +130,93 @@ Key params:
 - A single-object GET via query still returns a `Results` array — take `[0]`.
 - Errors come as `{ "QueryResult": { "Errors": [...], "Warnings": [...] } }` with HTTP 200.
   **Always check `Errors`** even on 200.
+
+## Writes — create & update (stories, tasks, fields)
+
+All writes are JSON POSTs with `Content-Type: application/json`. The body is wrapped in the
+object type name. **Always check the result envelope for `Errors`** even on HTTP 200.
+
+### Create a User Story
+```
+POST {base}/hierarchicalrequirement/create
+{
+  "HierarchicalRequirement": {
+    "Name": "S99: ...",
+    "Description": "<p>HTML…</p>",
+    "Project": "<project _ref>",
+    "PortfolioItem": "<feature _ref>",      // links story to a Feature (F-id)
+    "Iteration": "<iteration _ref>",         // optional; omit/null = backlog
+    "Owner": "<user _ref>"
+  }
+}
+→ { "CreateResult": { "Object": { "FormattedID": "US123", "_ref": "..." }, "Errors": [], "Warnings": [] } }
+```
+
+### Create a Task under a story
+```
+POST {base}/task/create
+{
+  "Task": {
+    "Name": "...",
+    "WorkProduct": "<story _ref>",   // the parent story/defect
+    "Owner": "<user _ref>",
+    "Estimate": 4.0,
+    "Project": "<project _ref>"
+  }
+}
+```
+
+### Update a field on an existing object
+POST to the object's own `_ref` (not `/create`) with just the fields to change:
+```
+POST <object _ref>
+{ "HierarchicalRequirement": { "ScheduleState": "In-Progress" } }
+→ { "OperationResult": { "Errors": [], "Warnings": [] } }
+```
+
+### Move a story between iterations / to backlog
+```
+POST <story _ref>
+{ "HierarchicalRequirement": { "Iteration": "<iteration _ref or null>" } }
+```
+`null` sends it to the backlog. Only mutate stories actually in the source iteration — fetch
+`Iteration` first and compare names (they're long: `2026 Iteration 13 (6/17 to 6/30)`).
+
+### Acceptance Criteria field
+AC is **not** the Description — it's a dedicated field, on most tenants the custom field
+**`c_AcceptanceCriteria`**. Discover the exact element name from the type definition:
+```
+GET {base}/typedefinition?query=(ElementName = "HierarchicalRequirement")&fetch=Attributes
+→ follow Attributes._ref, look for ElementName/Name containing "accept"
+```
+If discovery returns no candidates (custom fields aren't always enumerated), **fall back to
+`c_AcceptanceCriteria`** and **read it back** to confirm it persisted — Rally silently accepts
+(and drops) unknown fields, so a 200 alone does NOT prove the write took:
+```
+POST <story _ref>  { "HierarchicalRequirement": { "c_AcceptanceCriteria": "<p>…</p>" } }
+GET  {base}/hierarchicalrequirement?query=(FormattedID="US123")&fetch=c_AcceptanceCriteria
+```
+
+### Resolving Owner (users) — case-sensitive!
+`=` matches are **case-sensitive**. `(EmailAddress = "Susan.Xu@optum.com")` returns nothing if
+Rally stored `susan.xu@optum.com`. Strategy:
+1. Try `(EmailAddress = "<as given>")`, then `(UserName = "<as given>")`.
+2. On miss, search broadly: `(DisplayName contains "<surname>")`,
+   `(EmailAddress contains "<token>")`, `(LastName = "<surname>")` — show matches, pick the ref.
+3. Never invent an email. If ambiguous, ask the user.
+
+### Resolving Iterations
+```
+GET {base}/iteration?query=(Name = "2026 Iteration 13 (6/17 to 6/30)")
+   &project=<ref>&projectScopeUp=true&projectScopeDown=true&fetch=Name,_ref
+```
+Names are long and exact. To find "the current sprint", either ask the user for the exact name
+or query by date window (`((StartDate <= "<today>") AND (EndDate >= "<today>"))`).
+
+### Concurrency conflicts on bulk task creation
+Creating several Tasks immediately after creating their parent story can return:
+`Concurrency conflict: Object has been modified since being read for update`. This is transient
+— **retry the failed create 2–4×**. `scripts/rally_ops.py` retries automatically.
 
 ## Project scoping (the #1 source of confusion)
 
@@ -207,12 +321,20 @@ code and 404'd new routes. Pin to `:latest` (or a fresh digest) and restart afte
 | `400 Bad Request` on token endpoint | tenant only allows API keys | use an API key / bearer token instead of client-credentials |
 | SSL `CERTIFICATE_VERIFY_FAILED` | corp TLS inspection | set `RALLY_SSL_VERIFY=false` (log it) |
 | HTTP 200 but empty `Results` + `Errors` | malformed query | inspect `QueryResult.Errors` |
+| `400 code_not_found` on token endpoint | auth code already used (single-use) or expired | get a fresh code; cache the token so you exchange only once |
+| `invalid_scope` on `/auth` | missing `scope=alm` | add `scope=alm` to the authorize URL |
+| `invalid_redirect_uri` on `/auth` | URI not registered / path mismatch | use the EXACT registered `redirect_uri` (path included) |
+| AC field write "succeeds" but stays empty | wrong/unknown field name silently dropped | use `c_AcceptanceCriteria`; read the field back to verify |
+| `Concurrency conflict ... modified since read` | task created too fast after parent story | retry the create 2–4× |
+| User query returns nothing | `=` is case-sensitive | retry lowercase, or `contains` on DisplayName/Email |
 | Routes 404 after deploy | stale container image | rebuild + repin tag + restart |
 
 ## ADR-0005 (decisions carried from the source project)
 
 - **Nullable columns on the entity** over a separate `RallyFeatureLink` table — it's 1:1.
 - **Soft delete** over hard delete — preserves sessions/history; re-import reactivates.
-- **OAuth2 client credentials** over authorization code — works unattended for backends.
+- **OAuth2 client credentials** over authorization code **for unattended services**; for
+  **ad-hoc reports/CRUD** the authorization_code flow (or an API key) is the working path on
+  browser-login tenants. Cache the token so the single-use code is exchanged only once.
 - **Single project scope** via env var — multi-project deferred; covers the common case.
 - **Best-effort import** — workspace always created even if LLM/parse steps fail.
