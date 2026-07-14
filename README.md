@@ -83,7 +83,6 @@ cp agents/*.agent.md .github/agents/
 | `diagnose` | Disciplined diagnosis loop for hard bugs and performance regressions |
 | `diagnosing-bugs` | Diagnosis loop for hard bugs and performance regressions |
 | `domain-modeling` | Build and sharpen a project's domain model |
-| `feature-forge` | Older end-to-end pipeline — superseded by `nithin-forge` |
 | `find-skills` | Discover and install agent skills |
 | `git-guardrails-claude-code` | Hooks to block dangerous git commands before they run |
 | `grill-me` | Interview the user relentlessly until shared understanding |
