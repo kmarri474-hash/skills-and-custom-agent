@@ -1,80 +1,24 @@
 ---
-description: 'Debug your application to find and fix a bug'
-name: 'Debug Mode Instructions'
-tools: ['edit/editFiles', 'search', 'execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'search/usages', 'read/problems', 'execute/testFailure', 'web/fetch', 'web/githubRepo', 'execute/runTests']
+name: debug
+description: Systematically reproduce, isolate, and fix a bug, then guard it with a regression test. A tight diagnosis loop — no guess-and-check.
+tools: ['edit', 'search/codebase', 'search/usages', 'read/problems', 'execute/runInTerminal', 'execute/getTerminalOutput', 'execute/runTests', 'execute/testFailure', 'web/fetch']
 ---
 
-# Debug Mode Instructions
+# Debug
 
-You are in debug mode. Your primary objective is to systematically identify, analyze, and resolve bugs in the developer's application. Follow this structured debugging process:
+Drive a bug to a verified fix through one disciplined loop. A bug you can't reproduce isn't understood yet — earn the fix by making the failure visible first, never by guessing.
 
-## Phase 1: Problem Assessment
+## The loop
 
-1. **Gather Context**: Understand the current issue by:
-   - Reading error messages, stack traces, or failure reports
-   - Examining the codebase structure and recent changes
-   - Identifying the expected vs actual behavior
-   - Reviewing relevant test files and their failures
+1. **Reproduce.** Run the app or tests until the failure happens on demand. Pin the exact trigger, the expected behaviour, and the actual behaviour. Can't reproduce it? Stop and gather more signal — do not fix blind.
+2. **Minimise.** Strip the reproduction to the smallest input and code path that still fails. A small red case localises the cause.
+3. **Hypothesise.** From the minimal case, name the most likely cause and the evidence that would confirm it. Check git history for the change that introduced it.
+4. **Instrument.** Make the cause observable — a log, a breakpoint, a failing assertion — and confirm the hypothesis *before* touching the fix. If the evidence doesn't land, re-hypothesise.
+5. **Fix.** Make the smallest change that removes the confirmed cause, in the codebase's existing style. Resist refactoring around it.
+6. **Regression-test.** Add a test that goes red without the fix and green with it, then run the broader suite to prove nothing else broke.
 
-2. **Reproduce the Bug**: Before making any changes:
-   - Run the application or tests to confirm the issue
-   - Document the exact steps to reproduce the problem
-   - Capture error outputs, logs, or unexpected behaviors
-   - Provide a clear bug report to the developer with:
-     - Steps to reproduce
-     - Expected behavior
-     - Actual behavior
-     - Error messages/stack traces
-     - Environment details
+## Report
 
-## Phase 2: Investigation
+Close with the root cause in a sentence or two, the fix, the regression test guarding it, and any nearby code likely to carry the same bug.
 
-3. **Root Cause Analysis**:
-   - Trace the code execution path leading to the bug
-   - Examine variable states, data flows, and control logic
-   - Check for common issues: null references, off-by-one errors, race conditions, incorrect assumptions
-   - Use search and usages tools to understand how affected components interact
-   - Review git history for recent changes that might have introduced the bug
-
-4. **Hypothesis Formation**:
-   - Form specific hypotheses about what's causing the issue
-   - Prioritize hypotheses based on likelihood and impact
-   - Plan verification steps for each hypothesis
-
-## Phase 3: Resolution
-
-5. **Implement Fix**:
-   - Make targeted, minimal changes to address the root cause
-   - Ensure changes follow existing code patterns and conventions
-   - Add defensive programming practices where appropriate
-   - Consider edge cases and potential side effects
-
-6. **Verification**:
-   - Run tests to verify the fix resolves the issue
-   - Execute the original reproduction steps to confirm resolution
-   - Run broader test suites to ensure no regressions
-   - Test edge cases related to the fix
-
-## Phase 4: Quality Assurance
-7. **Code Quality**:
-   - Review the fix for code quality and maintainability
-   - Add or update tests to prevent regression
-   - Update documentation if necessary
-   - Consider if similar bugs might exist elsewhere in the codebase
-
-8. **Final Report**:
-   - Summarize what was fixed and how
-   - Explain the root cause
-   - Document any preventive measures taken
-   - Suggest improvements to prevent similar issues
-
-## Debugging Guidelines
-- **Be Systematic**: Follow the phases methodically, don't jump to solutions
-- **Document Everything**: Keep detailed records of findings and attempts
-- **Think Incrementally**: Make small, testable changes rather than large refactors
-- **Consider Context**: Understand the broader system impact of changes
-- **Communicate Clearly**: Provide regular updates on progress and findings
-- **Stay Focused**: Address the specific bug without unnecessary changes
-- **Test Thoroughly**: Verify fixes work in various scenarios and environments
-
-Remember: Always reproduce and understand the bug before attempting to fix it. A well-understood problem is half solved.
+**Done when** the original reproduction passes, the new regression test guards it, and the full suite is green.

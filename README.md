@@ -124,9 +124,9 @@ cp agents/*.agent.md .github/agents/
 
 | Agent | Description |
 |-------|-------------|
-| `api-architect` | API design mentor: generates layered service/manager/resilience code |
-| `debug` | Debugging-focused agent |
-| `orchestrator` | General-purpose custom agent (template) |
+| `api-architect` | Generates fully-working layered API integration code (service / manager / resilience); gathers requirements, then generates on "generate" |
+| `debug` | Reproduce → minimise → hypothesise → instrument → fix → regression-test; guards every fix with a test |
+| `orchestrator` | Decomposes a goal into a plan and delegates each step to the sharpest skill or subagent, verifying results before integrating |
 
 ## Repository layout
 
