@@ -1,0 +1,38 @@
+# -----------------------------------------------------------------------------
+# 🔄 AI Engineering Weekly Standards Sync
+#
+# Description: Thin wrapper — delegates all sync logic to the reusable workflow
+#   in the hub repo. No logic lives here; update the hub to change behavior.
+#
+# Install: Copy to .github/workflows/ai-engineering-weekly-sync.yml in target repo.
+# After copying: set the STACK input below to match this repo's stack type.
+# For repos where PRs target test-e2e, set pr_base_branch and integration_branch.
+# -----------------------------------------------------------------------------
+name: 🔄 AI Engineering Standards Sync
+
+on:
+  schedule:
+    # GitHub cron is always UTC. 06:07 UTC Mon ≈ 01:07 CDT / 00:07 CST.
+    - cron: '07 6 * * 1'  # 06:07 UTC every Monday (off-round to avoid fleet contention)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  sync:
+    uses: optum-ecp/care-navigation-turbo-repo-ui/.github/workflows/ai-engineering-sync-reusable.yml@ai-engineering-v0.20.0
+    with:
+      # ⚠️ Set to your stack: nestjs | java-webflux | java-spring-boot | nextjs | docs | cypress
+      stack: docs
+      # For cypress repos: pr_base_branch: test-e2e, integration_branch: test-e2e
+      pr_base_branch: main
+      integration_branch: main
+    secrets:
+      AI_SYNC_APP_ID: ${{ secrets.AI_SYNC_APP_ID }}
+      AI_SYNC_APP_PRIVATE_KEY: ${{ secrets.AI_SYNC_APP_PRIVATE_KEY }}

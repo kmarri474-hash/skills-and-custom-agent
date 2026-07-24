@@ -1,0 +1,48 @@
+# -----------------------------------------------------------------------------
+# 📝 PR Template Check
+#
+# Description: Thin wrapper — delegates all PR template validation and Copilot
+#   gate logic to the reusable workflow in the hub repo.
+#   No logic lives here; update the hub to change behavior.
+#
+# Install: Copy to .github/workflows/pr-template-check.yml in target repo.
+# Override the inputs below to tune the Copilot gate for this repo.
+# -----------------------------------------------------------------------------
+name: PR Template Check
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+  pull_request_review_comment:
+    types: [created]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  check:
+    name: 📝 Check PR Template
+    uses: optum-ecp/care-navigation-turbo-repo-ui/.github/workflows/pr-template-check-reusable.yml@ai-engineering-v3.2.1
+    with:
+      # Set to 'false' to disable the Copilot review gate entirely
+      copilot_gate_enabled: 'false'
+      # Space-separated base branches where the Copilot gate is enforced
+      copilot_gate_branches: 'main test-e2e'
+      # Only findings on the current commit are blocking (outdated ones are skipped)
+      copilot_gate_current_only: 'true'
+      # Minimum severity to block on: low | medium | high
+      # Findings BELOW this level are written to the step summary only — never posted as a PR comment.
+      copilot_gate_min_severity: 'high'
+      # When 'true', findings at/above the threshold must be resolved (thread resolved or
+      # comment outdated) — a reply alone will not clear them
+      copilot_gate_require_resolution: 'false'
+    secrets: inherit
