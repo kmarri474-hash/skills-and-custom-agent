@@ -44,7 +44,7 @@ Copies skills into your personal skills directory, so they invoke with plain nam
 (`/koti-forge`, no plugin prefix).
 
 ```shell
-git clone https://github.com/njosep17_uhg/skills-and-custom-agent.git
+git clone https://github.com/kmarri_uhg/skills-and-custom-agent.git
 cd skills-and-custom-agent
 
 # One skill:
