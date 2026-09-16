@@ -1,10 +1,10 @@
 # Skills & Custom Agents
 
-Nithin's private toolkit of agent **skills** and **custom agents** for Claude Code and other
+Koti's private toolkit of agent **skills** and **custom agents** for Claude Code and other
 Agent-Skills-standard harnesses (Codex, VS Code Copilot).
 
 > **Private / team-only.** This repository is private. Every install method below requires
-> access to `njosep17_uhg/skills-and-custom-agent`. Nothing here is published publicly.
+> access to `kmarri_uhg/skills-and-custom-agent`. Nothing here is published publicly.
 
 ## ⭐ Featured: `nithin-forge`
 
@@ -28,11 +28,11 @@ Pick the row for your setup. All require repo access (private repo).
 Installs the whole toolkit as a managed bundle that updates when you pull new versions.
 
 ```shell
-/plugin marketplace add njosep17_uhg/skills-and-custom-agent
+/plugin marketplace add kmarri_uhg/skills-and-custom-agent
 /plugin install nithin-forge@nithin-skills
 ```
 
-Then invoke the pipeline as `/nithin-forge:nithin-forge` (plugin skills are namespaced with the
+Then invoke the pipeline as `/koti-forge:koti-forge` (plugin skills are namespaced with the
 plugin name). Refresh later with `/plugin marketplace update nithin-skills`.
 
 > The marketplace manifest lives on the repo's **default branch**, so this works once this
@@ -41,14 +41,14 @@ plugin name). Refresh later with `/plugin marketplace update nithin-skills`.
 ### Claude Code / Codex / any Agent-Skills harness — direct copy (bare names)
 
 Copies skills into your personal skills directory, so they invoke with plain names
-(`/nithin-forge`, no plugin prefix).
+(`/koti-forge`, no plugin prefix).
 
 ```shell
 git clone https://github.com/njosep17_uhg/skills-and-custom-agent.git
 cd skills-and-custom-agent
 
 # One skill:
-cp -R skills/nithin-forge ~/.agents/skills/      # or ~/.claude/skills/
+cp -R skills/koti-forge ~/.agents/skills/      # or ~/.claude/skills/
 
 # The whole set:
 cp -R skills/* ~/.agents/skills/
@@ -60,7 +60,7 @@ The [`skills`](https://www.npmjs.com/package/skills) CLI lets you pick skills an
 copying each to the right per-IDE location:
 
 ```shell
-npx skills@latest add njosep17_uhg/skills-and-custom-agent
+npx skills@latest add kmarri_uhg/skills-and-custom-agent
 ```
 
 ### VS Code Copilot — custom agents
@@ -74,7 +74,7 @@ cp agents/*.agent.md .github/agents/
 
 | Skill | Description |
 |-------|-------------|
-| `nithin-forge` | ⭐ End-to-end delivery pipeline: discover → spec → tickets → implement → verify → review |
+| `koti-forge` | ⭐ End-to-end delivery pipeline: discover → spec → tickets → implement → verify → review |
 | `ask-nithin` | Router — ask which skill or flow fits your situation |
 | `caveman` | Ultra-compressed communication mode (~75% token reduction) |
 | `code-review` | Review changes since a fixed point along Standards + Spec axes |
@@ -115,7 +115,7 @@ cp agents/*.agent.md .github/agents/
 | `writing-great-skills` | Reference for the vocabulary and principles of predictable skills |
 | `zoom-out` | Step back for broader context or a higher-level perspective |
 
-> **`nithin-forge` runs on the mattpocock/skills ecosystem.** Its stations invoke
+> **`koti-forge` runs on the mattpocock/skills ecosystem.** Its stations invoke
 > `grill-with-docs`, `wayfinder`, `to-spec`, `to-tickets`, `implement`, `code-review`,
 > `research`, `prototype`, `tdd`, `verify`, and `setup-matt-pocock-skills`. Installing the
 > whole set (above) gives you every station.
