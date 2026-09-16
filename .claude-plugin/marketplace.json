@@ -1,0 +1,20 @@
+{
+  "name": "nithin-skills",
+  "owner": {
+    "name": "Nithin Joseph",
+    "email": "nithin_joseph@optum.com"
+  },
+  "metadata": {
+    "description": "Nithin's private skills & custom agents marketplace — an end-to-end delivery toolkit for Claude Code and other Agent-Skills harnesses.",
+    "version": "0.2.0"
+  },
+  "plugins": [
+    {
+      "name": "nithin-forge",
+      "source": "./",
+      "description": "Nithin's delivery toolkit: the nithin-forge end-to-end pipeline (discover → spec → tickets → implement → verify → review) plus the companion skills it conducts and the custom agents.",
+      "version": "0.2.0",
+      "author": { "name": "Nithin Joseph" }
+    }
+  ]
+}

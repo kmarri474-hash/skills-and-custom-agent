@@ -1,0 +1,34 @@
+# -----------------------------------------------------------------------------
+# 🔀 Hotfix Cascade
+#
+# Description: Thin wrapper — delegates all cascade logic to the reusable
+#   workflow in the hub repo. No logic lives here; update the hub to change behavior.
+#
+# Install: Copy to .github/workflows/hotfix-cascade.yml in target repo.
+# No configuration needed — the workflow triggers on push to any RB-* branch.
+# Ensure a 'hotfix-cascade' label exists in this repo (the workflow applies it).
+#
+# By default it cascades ONLY the hotfix diff (strategy: diff) so teams do not
+# need to cherry-pick. To use the legacy full-branch PR behavior, pass
+# `with: { strategy: merge }` to the reusable workflow below.
+# -----------------------------------------------------------------------------
+name: 🔀 Hotfix Cascade
+
+on:
+  push:
+    branches:
+      - 'RB-*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  cascade:
+    uses: optum-ecp/care-navigation-turbo-repo-ui/.github/workflows/hotfix-cascade-reusable.yml@ai-engineering-v3.2.1
+    secrets: inherit

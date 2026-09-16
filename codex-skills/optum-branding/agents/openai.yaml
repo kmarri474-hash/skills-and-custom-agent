@@ -1,0 +1,4 @@
+interface:
+  display_name: "Optum Branding"
+  short_description: "Apply Optum brand guidance to artifacts"
+  default_prompt: "Use $optum-branding to align this page, deck, document, or spreadsheet with Optum brand guidance."
