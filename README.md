@@ -6,7 +6,7 @@ Agent-Skills-standard harnesses (Codex, VS Code Copilot).
 > **Private / team-only.** This repository is private. Every install method below requires
 > access to `kmarri_uhg/skills-and-custom-agent`. Nothing here is published publicly.
 
-## ⭐ Featured: `nithin-forge`
+## ⭐ Featured: `koti-forge`
 
 An end-to-end delivery pipeline that chains the individual skills into one unbroken run —
 from a raw idea to reviewed, committed code:
@@ -17,7 +17,7 @@ discover → spec → tickets → implement → verify → review
 
 It's **user-invoked** (you type it; it never fires on its own) and *conducts* the companion
 skills below, so install the whole toolkit to use it. See
-[`skills/nithin-forge/SKILL.md`](skills/nithin-forge/SKILL.md).
+[`skills/koti-forge/SKILL.md`](skills/koti-forge/SKILL.md).
 
 ## Install
 
@@ -29,7 +29,7 @@ Installs the whole toolkit as a managed bundle that updates when you pull new ve
 
 ```shell
 /plugin marketplace add kmarri_uhg/skills-and-custom-agent
-/plugin install nithin-forge@nithin-skills
+/plugin install koti-forge@koti-skills
 ```
 
 Then invoke the pipeline as `/koti-forge:koti-forge` (plugin skills are namespaced with the
